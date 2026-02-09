@@ -9,12 +9,17 @@ from flask_jwt_extended import JWTManager
 app = Flask(__name__)
 
 # ---------------- CORS ----------------
+# ---------------- CORS ----------------
 allowed_origins = [
     "http://localhost:3000",
-    "https://varasa-main-six.vercel.app/"  # CHANGE to your Vercel URL later
+    "https://varasa-main-six.vercel.app"
 ]
 
-CORS(app, resources={r"/api/*": {"origins": allowed_origins}}, supports_credentials=True)
+CORS(
+    app,
+    resources={r"/api/*": {"origins": allowed_origins}},
+    supports_credentials=True
+)
 
 # ---------------- DATABASE ----------------
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///cms.db"
