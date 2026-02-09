@@ -9,7 +9,6 @@ from flask_jwt_extended import JWTManager
 app = Flask(__name__)
 
 # ---------------- CORS ----------------
-# ---------------- CORS ----------------
 allowed_origins = [
     "http://localhost:3000",
     "https://varasa-main-six.vercel.app"
@@ -25,15 +24,19 @@ CORS(
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///cms.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# ---------------- UPLOAD FOLDER ----------------
-UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+# ---------------- UPLOAD FOLDER (IMPORTANT FIX) ----------------
+# NEVER use os.getcwd() on Render
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 
-# create uploads folder if missing
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ---------------- JWT CONFIG ----------------
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "change-this-in-production")
+app.config["JWT_SECRET_KEY"] = os.environ.get(
+    "JWT_SECRET_KEY",
+    "change-this-in-production"
+)
 app.config["JWT_TOKEN_LOCATION"] = ["headers"]
 app.config["JWT_HEADER_NAME"] = "Authorization"
 app.config["JWT_HEADER_TYPE"] = "Bearer"
@@ -49,12 +52,13 @@ with app.app_context():
 app.register_blueprint(content_bp, url_prefix="/api")
 app.register_blueprint(auth_bp, url_prefix="/api")
 
-# ---------------- SERVE IMAGES ----------------
-@app.route('/uploads/<path:filename>')
+# ---------------- SERVE IMAGES (CRITICAL) ----------------
+@app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+    uploads = app.config["UPLOAD_FOLDER"]
+    return send_from_directory(uploads, filename, as_attachment=False)
 
-# ---------------- HEALTH CHECK (IMPORTANT FOR RENDER) ----------------
+# ---------------- HEALTH CHECK ----------------
 @app.route("/")
 def home():
     return "Backend running"

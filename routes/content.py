@@ -24,6 +24,7 @@ def get_section(section):
             "author": i.author,
             "year": i.year
         })
+
     return jsonify(data)
 
 
@@ -86,6 +87,7 @@ def delete(id):
 
     db.session.delete(item)
     db.session.commit()
+
     return jsonify({"message": "Deleted"})
 
 
@@ -93,15 +95,24 @@ def delete(id):
 @content_bp.route("/upload", methods=["POST"])
 @jwt_required()
 def upload():
+
     if "file" not in request.files:
         return jsonify({"message": "No file uploaded"}), 400
 
     file = request.files["file"]
 
+    if file.filename == "":
+        return jsonify({"message": "Empty filename"}), 400
+
     filename = secure_filename(file.filename)
-    path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
 
+    save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+
+    # ensure folder exists
     os.makedirs(current_app.config["UPLOAD_FOLDER"], exist_ok=True)
-    file.save(path)
 
-    return jsonify({"url": f"/uploads/{filename}"})
+    file.save(save_path)
+
+    return jsonify({
+        "url": f"/uploads/{filename}"
+    })
