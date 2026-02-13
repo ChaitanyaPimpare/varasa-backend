@@ -6,6 +6,7 @@ from routes.content import content_bp
 from routes.auth import auth_bp
 from flask_jwt_extended import JWTManager
 
+
 app = Flask(__name__)
 
 # ---------------- CORS ----------------
@@ -53,10 +54,11 @@ app.register_blueprint(content_bp, url_prefix="/api")
 app.register_blueprint(auth_bp, url_prefix="/api")
 
 # ---------------- SERVE IMAGES (CRITICAL) ----------------
+# serve uploaded images publicly
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
-    uploads = app.config["UPLOAD_FOLDER"]
-    return send_from_directory(uploads, filename, as_attachment=False)
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
 
 # ---------------- HEALTH CHECK ----------------
 @app.route("/")
